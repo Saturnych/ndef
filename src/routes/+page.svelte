@@ -1,18 +1,9 @@
 <script lang="ts">
+	import Dialog, { Title, Content, Actions } from '@smui/dialog';
 	import Button, { Label, Icon } from '@smui/button';
 
-	let clicked = 0;
-
-	function handleClick(event: CustomEvent | MouseEvent) {
-		event = event as MouseEvent;
-		if (event.button === 0) {
-			clicked++;
-		}
-	}
-
-	function reset() {
-		clicked = 0;
-	}
+	let open = false;
+	let clicked = 'Nothing yet.';
 
 	//console.log('window.location:', window.location);
 
@@ -77,18 +68,30 @@
 </p>
 <p>{@html log}</p>
 <br />
-<Button on:mousedown={handleClick}>
-	<Icon class="material-icons">thumb_up</Icon>
-	<Label>Click Me</Label>
+
+<Dialog
+  bind:open
+  aria-labelledby="simple-title"
+  aria-describedby="simple-content"
+>
+  <!-- Title cannot contain leading whitespace due to mdc-typography-baseline-top() -->
+  <Title id="simple-title">Dialog Title</Title>
+  <Content id="simple-content">Super awesome dialog body text?</Content>
+  <Actions>
+    <Button on:click={() => (clicked = 'No')}>
+      <Label>No</Label>
+    </Button>
+    <Button on:click={() => (clicked = 'Yes')}>
+      <Label>Yes</Label>
+    </Button>
+  </Actions>
+</Dialog>
+
+<Button on:click={() => (open = true)}>
+  <Label>Open Dialog</Label>
 </Button>
-<p class="mdc-typography--body1">
-	{#if clicked}
-		You've clicked the button {clicked} time{clicked === 1 ? '' : 's'}. You can
-		<a on:click={reset} href="javascript:void(0);">reset it</a>.
-	{:else}
-		<span class="grayed">You haven't clicked the button.</span>
-	{/if}
-</p>
+
+<pre class="status">Clicked: {clicked}</pre>
 
 <style>
 	.grayed {
