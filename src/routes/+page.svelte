@@ -42,13 +42,14 @@
 		  if (ignoreRead) {
 		    return; // запись отложена, чтение игнорируется.
 		  }
-		  log += "We read a tag";
+		  log += "We have read a tag";
 		};
 
 		ndef.scan().then(()=>{
 			try {
-			  write("Hello World").then(()=>{
-					log += "We wrote to a tag!";
+				log += "Try to read a tag";
+				write("Hello World").then(()=>{
+					log += "We have written to a tag!";
 				});
 			} catch(err) {
 			  log += "Error: " + err.message;
