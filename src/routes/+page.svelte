@@ -16,20 +16,50 @@
 
 	//console.log('window.location:', window.location);
 
+	let log = '';
+
+	let ignoreRead = false;
 	let ndef;
 	try {
 	  ndef = new NDEFReader();
 	} catch (err) {
-	  console.error("ndef error:", err.message);
+	  log += "ndef error: " + err.message;
 	}
-	
+
 	if (ndef) {
-		console.log("ndef:", ndef);
+
+		function write(data) {
+			ignoreRead = true;
+			return new Promise((resolve, reject) => {
+				ndef.addEventListener("reading", event => {
+					// Проверяем, хотим ли мы писать в этот тег, или отклоняем.
+					ndef.write(data).then(resolve, reject).finally(() => ignoreRead = false);
+				}, { once: true });
+			});
+		}
+
+		ndef.onreading = (event) => {
+		  if (ignoreRead) {
+		    return; // запись отложена, чтение игнорируется.
+		  }
+		  log += "We read a tag";
+		};
+
+		ndef.scan().then(()=>{
+			try {
+			  write("Hello World").then(()=>{
+					log += "We wrote to a tag!";
+				});
+			} catch(err) {
+			  log += "Error: " + err.message;
+			}
+		});
+
   }
 </script>
 
-{JSON.stringify(ndef)}
-
+{JSON.stringify(log)}
+<br />
 <Button on:mousedown={handleClick}>
 	<Icon class="material-icons">thumb_up</Icon>
 	<Label>Click Me</Label>
