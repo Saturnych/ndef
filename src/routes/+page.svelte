@@ -22,23 +22,24 @@
 	};
 
 	let ignoreRead = false;
-	let ndef;
+	let reader, writer;
 	try {
-	  ndef = new NDEFReader();
+	  reader = new NDEFReader();
+		writer = new NDEFWriter();
 	} catch (err) {
 	  consoleLog("ndef error: " + err.message);
 	}
 
 	async function readTag() {
-			if (!ndef) {
-				consoleLog('No NFC enabled!');
+			if (!reader) {
+				consoleLog('No reader enabled!');
 				return;
 			}
-		  const reader = new NDEFReader();
 	    try {
 	      await reader.scan();
 	      reader.onreading = event => {
-	        const decoder = new TextDecoder();
+					consoleLog("onreading event: " + JSON.stringify(event));
+					const decoder = new TextDecoder();
 	        for (const record of event.message.records) {
 	          consoleLog("Record type:  " + record.recordType);
 	          consoleLog("MIME type:    " + record.mediaType);
@@ -51,13 +52,12 @@
 	}
 
 	async function writeTag() {
-			if (!ndef) {
-				consoleLog('No NFC enabled!');
+			if (!writer) {
+				consoleLog('No writer enabled!');
 				return;
 			}
-			const writer = new NDEFWriter();
 	    try {
-	      await writer.write("helloworld");
+	      await writer.write("helloworld!");
 	      consoleLog("NDEF message written!");
 	    } catch(error) {
 	      consoleLog(error);
@@ -72,7 +72,7 @@
 <Button on:mousedown={writeTag}>
 	<Icon class="material-icons">thumb_down</Icon>
 	<Label>Test NFC Write</Label>
-</Button>	
+</Button>
 </p>
 <p>{@html log}</p>
 <br />
