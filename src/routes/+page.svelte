@@ -17,49 +17,64 @@
 	//console.log('window.location:', window.location);
 
 	let log = '';
+	const consoleLog = (data) => {
+	  log += data + "\n<br>" ;
+	};
 
 	let ignoreRead = false;
 	let ndef;
 	try {
 	  ndef = new NDEFReader();
 	} catch (err) {
-	  log += "ndef error: " + err.message;
+	  consoleLog("ndef error: " + err.message);
 	}
 
-	if (ndef) {
-
-		function write(data) {
-			ignoreRead = true;
-			return new Promise((resolve, reject) => {
-				ndef.addEventListener("reading", event => {
-					// Проверяем, хотим ли мы писать в этот тег, или отклоняем.
-					ndef.write(data).then(resolve, reject).finally(() => ignoreRead = false);
-				}, { once: true });
-			});
-		}
-
-		ndef.onreading = (event) => {
-		  if (ignoreRead) {
-		    return; // запись отложена, чтение игнорируется.
-		  }
-		  log += "We have read a tag";
-		};
-
-		ndef.scan().then(()=>{
-			try {
-				log += "Try to read a tag";
-				write("Hello World").then(()=>{
-					log += "We have written to a tag!";
-				});
-			} catch(err) {
-			  log += "Error: " + err.message;
+	async function readTag() {
+			if (!ndef) {
+				consoleLog('No NFC enabled!');
+				return;
 			}
-		});
+		  const reader = new NDEFReader();
+	    try {
+	      await reader.scan();
+	      reader.onreading = event => {
+	        const decoder = new TextDecoder();
+	        for (const record of event.message.records) {
+	          consoleLog("Record type:  " + record.recordType);
+	          consoleLog("MIME type:    " + record.mediaType);
+	          consoleLog("=== data ===\n" + decoder.decode(record.data));
+	        }
+	      }
+	    } catch(error) {
+	      consoleLog(error);
+	    }
+	}
 
-  }
+	async function writeTag() {
+			if (!ndef) {
+				consoleLog('No NFC enabled!');
+				return;
+			}
+			const writer = new NDEFWriter();
+	    try {
+	      await writer.write("helloworld");
+	      consoleLog("NDEF message written!");
+	    } catch(error) {
+	      consoleLog(error);
+	    }
+	}
 </script>
-
-{JSON.stringify(log)}
+<p>
+<Button on:mousedown={readTag}>
+	<Icon class="material-icons">thumb_up</Icon>
+	<Label>Test NFC Read</Label>
+</Button>
+<Button on:mousedown={writeTag}>
+	<Icon class="material-icons">thumb_down</Icon>
+	<Label>Test NFC Write</Label>
+</Button>	
+</p>
+<p>{@html log}</p>
 <br />
 <Button on:mousedown={handleClick}>
 	<Icon class="material-icons">thumb_up</Icon>
