@@ -29,6 +29,7 @@
 	} catch (err) {
 	  consoleLog("ndef error: " + err.message);
 	}
+	if (!writer) writer = reader;
 
 	async function readTag() {
 			if (!reader) {
