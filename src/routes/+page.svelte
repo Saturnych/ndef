@@ -1,11 +1,21 @@
 <script lang="ts">
+	import { setContext, onMount } from 'svelte';
 	import Dialog, { Title, Content, Actions } from '@smui/dialog';
 	import Button, { Label, Icon } from '@smui/button';
+	import { Html5QrcodeScanner } from 'html5-qrcode';
+
+	function onScanSuccess(decodedText, decodedResult) {
+    alert(`Code scanned: ${decodedText}`); // decodedResult
+	}
+
+	onMount(() => {
+		var html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: 250 });
+		console.log('window.location:', html5QrcodeScanner);
+		html5QrcodeScanner.render(onScanSuccess);
+	});
 
 	let open = false;
 	let clicked = 'Nothing yet.';
-
-	//console.log('window.location:', window.location);
 
 	let log = '';
 	const consoleLog = (data) => {
@@ -56,15 +66,16 @@
 	    }
 	}
 </script>
+<div id="qr-reader" style="width: 600px"></div>
 <p>
-<Button on:mousedown={readTag}>
-	<Icon class="material-icons">thumb_up</Icon>
-	<Label>Test NFC Read</Label>
-</Button>
-<Button on:mousedown={writeTag}>
-	<Icon class="material-icons">thumb_down</Icon>
-	<Label>Test NFC Write</Label>
-</Button>
+	<Button on:mousedown={readTag}>
+		<Icon class="material-icons">thumb_up</Icon>
+		<Label>Test NFC Read</Label>
+	</Button>
+	<Button on:mousedown={writeTag}>
+		<Icon class="material-icons">thumb_down</Icon>
+		<Label>Test NFC Write</Label>
+	</Button>
 </p>
 <p>{@html log}</p>
 <br />
