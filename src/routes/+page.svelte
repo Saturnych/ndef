@@ -2,16 +2,65 @@
 	import { setContext, onMount } from 'svelte';
 	import Dialog, { Title, Content, Actions } from '@smui/dialog';
 	import Button, { Label, Icon } from '@smui/button';
-	import { Html5QrcodeScanner } from 'html5-qrcode';
+	import { Html5Qrcode, Html5QrcodeScanner } from 'html5-qrcode';// { Html5QrcodeScanner }
 
 	function onScanSuccess(decodedText, decodedResult) {
     alert(`Code scanned: ${decodedText}`); // decodedResult
+		console.log('decodedResult:', decodedResult);
+		var resultContainer = document.getElementById('qr-reader-results');
+		resultContainer.innerHTML=decodedText;
+	}
+
+	function onScanFailure(error) {
+	  // handle scan failure, usually better to ignore and keep scanning.
+	  // for example:
+	  console.error(`Code scan error: ${error}`);
 	}
 
 	onMount(() => {
-		var html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: 250 });
-		console.log('window.location:', html5QrcodeScanner);
-		html5QrcodeScanner.render(onScanSuccess);
+		//var html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: 250 }); // { fps: 10, qrbox: {width: 250, height: 250} }
+		//html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+		// This method will trigger user permissions
+		const html5QrCode = new Html5Qrcode("qr-reader");
+
+		const fileinput = document.getElementById('qr-input-file');
+		fileinput.addEventListener('change', e => {
+		  if (e.target.files.length == 0) {
+		    // No file selected, ignore
+		    return;
+		  }
+
+		  const imageFile = e.target.files[0];
+			console.log('imageFile:', imageFile);
+		  // Scan QR Code
+		  html5QrCode.scanFile(imageFile, true)
+		  .then(decodedText => {
+		    // success, use decodedText
+		    console.log(decodedText);
+		  })
+		  .catch(err => {
+		    // failure, handle it.
+		    console.log(`Error scanning file. Reason: ${err}`)
+		  });
+		});
+
+		Html5Qrcode.getCameras().then(devices => {
+		  /**
+		   * devices would be an array of objects of type:
+		   * { id: "id", label: "label" }
+		   */
+			console.log('devices:', devices);
+		  if (devices && devices.length) {
+		    var cameraId = devices[0].id;
+		    // .. use this to start scanning.
+				html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: {width: 250, height: 250} }, onScanSuccess, onScanFailure).catch((err) => {
+					 // Start failed, handle it.
+					 console.error(`Start error: ${err}`);
+				});
+		  }
+		}).catch(err => {
+		  // handle err
+		});
 	});
 
 	let open = false;
@@ -66,7 +115,9 @@
 	    }
 	}
 </script>
+<input type="file" id="qr-input-file" accept="image/*" capture>
 <div id="qr-reader" style="width: 600px"></div>
+<div id="qr-reader-results"></div>
 <p>
 	<Button on:mousedown={readTag}>
 		<Icon class="material-icons">thumb_up</Icon>
