@@ -111,9 +111,9 @@
 	    }
 	}
 </script>
-<div id="qr-reader-results"></div>
+<div id="qr-reader-results" style="width: 400px; max-width: 400px; oveflow: clip;"></div>
 <input type="file" id="qr-input-file" accept="image/*" capture>
-<div id="qr-reader" style="width: 600px"></div>
+<div id="qr-reader" style="width: 400px; max-width: 400px;"></div>
 <br />
 <p>
 	<Button on:mousedown={readTag}>
