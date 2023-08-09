@@ -4,11 +4,10 @@
 	import Button, { Label, Icon } from '@smui/button';
 	import { Html5Qrcode, Html5QrcodeScanner } from 'html5-qrcode';// { Html5QrcodeScanner }
 
-	function onScanSuccess(decodedText, decodedResult) {
-    alert(`Code scanned: ${decodedText}`); // decodedResult
-		console.log('decodedResult:', decodedResult);
+	function onScanSuccess(decodedText) {
+		console.log('decodedText:', decodedText);
 		var resultContainer = document.getElementById('qr-reader-results');
-		resultContainer.innerHTML=decodedText;
+		resultContainer.innerHTML = decodedText;
 	}
 
 	function onScanFailure(error) {
@@ -32,16 +31,12 @@
 
 		  const imageFile = e.target.files[0];
 			console.log('imageFile:', imageFile);
+
 		  // Scan QR Code
 		  html5QrCode.scanFile(imageFile, true)
-		  .then(decodedText => {
-		    // success, use decodedText
-		    console.log(decodedText);
-		  })
-		  .catch(err => {
-		    // failure, handle it.
-		    console.log(`Error scanning file. Reason: ${err}`)
-		  });
+		  .then(onScanSuccess)
+		  .catch(onScanFailure);
+
 		});
 
 		Html5Qrcode.getCameras().then(devices => {
@@ -50,6 +45,7 @@
 		   * { id: "id", label: "label" }
 		   */
 			console.log('devices:', devices);
+
 		  if (devices && devices.length) {
 		    var cameraId = devices[0].id;
 		    // .. use this to start scanning.
@@ -115,9 +111,10 @@
 	    }
 	}
 </script>
+<div id="qr-reader-results"></div>
 <input type="file" id="qr-input-file" accept="image/*" capture>
 <div id="qr-reader" style="width: 600px"></div>
-<div id="qr-reader-results"></div>
+<br />
 <p>
 	<Button on:mousedown={readTag}>
 		<Icon class="material-icons">thumb_up</Icon>
